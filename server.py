@@ -454,8 +454,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     continue
                 names = [x.get("name") for x in (d.get("frames") or [])][:6]
                 out.append({"file": f, "saved": d.get("saved", ""),
+                            "auto": f == "autosave.json",
                             "frames": len(d.get("frames") or []),
                             "cells": len(d.get("transcript") or []), "names": names})
+            out.sort(key=lambda r: (not r["auto"], r["file"]), reverse=False)
             return self._send(200, {"sessions": out})
 
         if p == "/api/session/open":
@@ -803,16 +805,11 @@ if __name__ == "__main__":
     for e in ENV:
         if not e.get("version"):
             print(f"  missing: {e['alias']:<10} {e['module']}  ({e.get('error', '')})", flush=True)
+    # the app starts empty on purpose. The autosave is still written and still
+    # offered as "last session" in the open list — just never opened behind your back.
     auto = os.path.join(SESSIONS, "autosave.json")
     if os.path.isfile(auto):
-        try:
-            with open(auto, encoding="utf-8") as fh:
-                data = json.load(fh)
-            apply_session(data, "autosave.json")
-            print(f"restored session: {len(PENDING)} frames pending, "
-                  f"{len(CURRENT['transcript'])} cells", flush=True)
-        except Exception as e:
-            print(f"could not restore session: {e}", flush=True)
+        print("last session available from the open button (not auto-opened)", flush=True)
 
     socketserver.ThreadingTCPServer.allow_reuse_address = True
     httpd = socketserver.ThreadingTCPServer((host, port), Handler)

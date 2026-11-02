@@ -69,10 +69,15 @@ cannot see.
 
 ## Sessions
 
-`autosave.json` is written a second after every change, so reopening the app resumes the last
-session: frames return as **not loaded** placeholders with their source and last-known shape, and
-the transcript returns as `restored — not run` cards. Nothing is read from disk until you click a
-frame, because re-reading a 10 GB CSV on launch would be the worst possible behaviour.
+The app always starts empty. `autosave.json` is written a second after every change and shows up in
+the **open** list as *last session*, so resuming is one click — but never something that happens
+behind your back. Opening a session does not read any data: frames return as **not loaded**
+placeholders with their source and last-known shape, and the transcript returns as
+`restored — not run` cards. Re-reading a 10 GB CSV on launch would be the worst possible behaviour,
+so nothing is read until you click a frame.
+
+**new** clears the workspace, the transcript and the bindings, and deletes the autosave so the
+cleared state is not offered back.
 
 File-backed frames remember their `usecols`. Derived frames remember their right-hand side, not the
 whole statement — which is why a frame you renamed still restores under the new name.

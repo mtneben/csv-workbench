@@ -925,7 +925,8 @@ themeSel.onchange = () => applyTheme(themeSel.value);
 
 $('#addFile').onclick = openPicker;
 
-/* session restart: two clicks, because it throws away every frame */
+/* new analysis: two clicks, because it throws away every frame. Also deletes the
+   autosave, so the cleared workspace is not offered back as "last session". */
 let RESET_ARMED = false;
 let RESET_TIMER = null;
 $('#saveBtn').onclick = async () => {
@@ -949,7 +950,7 @@ $('#sessBtn').onclick = async () => {
   scrim.innerHTML = `<div class="picker" style="width:min(620px,94%)">
     <h3>saved sessions</h3>
     ${sessions.length ? sessions.map(s => `<div class="frow2" data-file="${esc(s.file)}">
-        <span class="fn" style="flex:0 0 210px">${esc(s.file)}</span>
+        <span class="fn" style="flex:0 0 210px">${s.auto ? 'last session (auto)' : esc(s.file)}</span>
         <span class="fs" style="flex:1;color:var(--ink3)">${s.frames} frames · ${s.cells} cells</span>
         <span class="fs">${esc((s.saved || '').replace('T', ' ').replace('Z', ''))}</span>
       </div>`).join('') : '<div style="padding:16px;color:var(--ink3);font-size:12px">nothing saved yet</div>'}
@@ -993,19 +994,19 @@ $('#resetBtn').onclick = async () => {
   const btn = $('#resetBtn');
   if (!RESET_ARMED) {
     RESET_ARMED = true;
-    btn.textContent = 'sure? loses frames';
+    btn.textContent = 'sure? clears it';
     btn.classList.add('danger');
     clearTimeout(RESET_TIMER);
     RESET_TIMER = setTimeout(() => {
       RESET_ARMED = false;
-      btn.textContent = 'restart';
+      btn.textContent = 'new';
       btn.classList.remove('danger');
     }, 4000);
     return;
   }
   clearTimeout(RESET_TIMER);
   RESET_ARMED = false;
-  btn.textContent = 'restarting…';
+  btn.textContent = 'starting…';
   btn.classList.remove('danger');
   try {
     const r = await api('/api/reset', {});
@@ -1015,11 +1016,11 @@ $('#resetBtn').onclick = async () => {
     HISTORY.length = 0;
     renderFrames();
     renderCards();
-    toast(`session restarted in ${r.elapsed} s — frames, bindings and imports cleared`, false);
+    toast(`new analysis — workspace cleared in ${r.elapsed} s`, false);
   } catch (e) {
     toast(e.message);
   } finally {
-    btn.textContent = 'restart';
+    btn.textContent = 'new';
   }
 };
 
