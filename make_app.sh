@@ -61,13 +61,18 @@ mkdir -p "\$(dirname "\$LOG")"
 
 cd "\$APP_DIR" || exit 1
 
+# log every attempt, including the no-op path: a launcher that fails silently
+# is impossible to diagnose from the outside
+echo "--- \$(date) launch requested" >> "\$LOG"
+
 # already running? just show it
 if /usr/bin/curl -s -o /dev/null --max-time 1 "\$URL"; then
+  echo "    a server is already listening on \$URL — opening the browser" >> "\$LOG"
   /usr/bin/open "\$URL"
   exit 0
 fi
 
-echo "--- \$(date) starting workbench from \$APP_DIR" >> "\$LOG"
+echo "    starting \$PY server.py \$PORT" >> "\$LOG"
 "\$PY" server.py "\$PORT" 127.0.0.1 >> "\$LOG" 2>&1 &
 SERVER_PID=\$!
 trap 'kill \$SERVER_PID 2>/dev/null' TERM INT EXIT
