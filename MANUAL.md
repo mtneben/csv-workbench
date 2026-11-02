@@ -89,6 +89,36 @@ dialog if the server does not come up. Read that log first when something is wro
 
 **At login.** System Settings → General → Login Items → add `workbench.command`.
 
+### On a managed or locked-down Mac
+
+On a machine you do not administer, prefer the option that installs nothing. Keep the project and the
+venv in your home folder, do not use `make_app.sh`, and launch with a **Shortcut** — it is Apple's own,
+already trusted, and looks like nothing at all:
+
+1. Shortcuts → **+** → name it `workbench`.
+2. Add **Run Shell Script**, shell `/bin/bash`, and paste this with your real paths:
+
+```bash
+APP="$HOME/tools/workbench"; PY="$APP/bin/python"; URL="http://127.0.0.1:8840/"
+curl -s -o /dev/null --max-time 1 "$URL" && { open "$URL"; exit 0; }
+cd "$APP" && nohup "$PY" server.py 8840 127.0.0.1 >> "$HOME/Library/Logs/workbench.log" 2>&1 &
+sleep 2; open "$URL"
+```
+
+3. Add **Open URLs** → `http://127.0.0.1:8840/`.
+4. Pin it to the menu bar (shortcut details → Pin in Menu Bar) or drag it to the Dock.
+
+Nothing goes into `/Applications`, no login item, no LaunchAgent, no admin rights, no Terminal window.
+If you would rather not have any clickable thing at all, the two-line version is fine too:
+
+```bash
+cd ~/tools/workbench && bin/python server.py 8840 127.0.0.1
+```
+
+**Do not** bother with Automator. Its "Application" output is the same shell-script-in-a-bundle that
+`make_app.sh` produces — the only difference is an Apple-signed stub around the script — and Automator
+is deprecated in favour of Shortcuts anyway.
+
 ---
 
 ## 3. The interface
