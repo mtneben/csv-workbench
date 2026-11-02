@@ -703,8 +703,9 @@ function autoGrow() {
 
 /* ---------------- staged file picker ---------------- */
 async function openPicker() {
-  let files = [];
-  try { files = (await api('/api/files', {})).files; } catch (e) { toast(e.message); return; }
+  let files = [], where = '';
+  try { const r = await api('/api/files', {}); files = r.files; where = r.dir || ''; } catch (e) { toast(e.message); return; }
+  const whereShort = where.replace(/^\/Users\/[^/]+/, '~');
   const scrim = document.createElement('div');
   scrim.className = 'scrim';
   scrim.innerHTML = `<div class="picker">
@@ -715,8 +716,9 @@ async function openPicker() {
                     color:var(--ink);border:1px solid var(--line);border-radius:7px;
                     padding:7px 10px;outline:none">
       <button id="pickGo">Open</button>
+      <button id="pickBrowse" title="choose with the macOS file dialog">Choose…</button>
     </div>
-    <h3 style="padding-top:4px">or pick from the data folder</h3>
+    <h3 style="padding-top:4px">or pick from <span class="fm">${esc(whereShort)}</span></h3>
     ${files.map(f => `<div class="frow2" data-path="${esc(f.path)}" data-name="${esc(f.name)}">
         <span class="fn">${esc(f.name)}</span><span class="fs">${fmtBytes(f.bytes)}</span></div>`).join('')}
     <div class="pfoot"><button class="ghost" id="pickCancel">Cancel</button></div>
@@ -733,6 +735,26 @@ async function openPicker() {
     openPreview(v);
   };
   scrim.querySelector('#pickGo').onclick = go;
+
+  // the dialog appears on the machine running the server — that is the machine
+  // holding the data, which is the only place it would be useful anyway
+  const browse = scrim.querySelector('#pickBrowse');
+  browse.onclick = async () => {
+    browse.disabled = true; browse.textContent = 'choosing…';
+    try {
+      const r = await api('/api/pick', {});
+      if (r.cancelled) {
+        browse.disabled = false; browse.textContent = 'Choose…';
+        if (r.detail) toast(r.detail);
+        return;
+      }
+      close();
+      openPreview(r.path);
+    } catch (e) {
+      browse.disabled = false; browse.textContent = 'Choose…';
+      toast(e.message);
+    }
+  };
   pathIn.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); go(); } };
   setTimeout(() => pathIn.focus(), 40);
   scrim.querySelectorAll('.frow2').forEach(r => r.onclick = () => {

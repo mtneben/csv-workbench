@@ -58,6 +58,11 @@ cd ~/tools/workbench
 Bind `127.0.0.1`, never `0.0.0.0`. It keeps the tool off the office network, and `localhost` counts
 as a secure context, which is what makes the copy button work.
 
+**Adding a file.** `+ Add file` offers three ways in: a **Choose…** button that opens the real macOS
+Open dialog (you pick any file anywhere; only its *path* is sent to the server, so nothing is copied
+or uploaded), a path box you can type into, and a list of the files in the folder you last picked
+from — which is the sample folder until you pick something else.
+
 **Launcher.** `workbench.command` does all of the above and opens Safari. Double-click it in
 Finder; if macOS refuses the first time, right-click → Open. It assumes
 `~/venvs/workbench/bin/python`; override with `WORKBENCH_PYTHON=/path/to/python`.
@@ -382,7 +387,10 @@ intermediate results you did not plan to keep.
 
 ---
 
-## 14. Reaching it from another device
+## 14. Reaching it from another device (optional)
+
+**Skip this section entirely if the tool only ever runs on one Mac.** Nothing above depends on it, and
+for a locked-down or managed machine, not doing it is the correct answer.
 
 The server binds `127.0.0.1`, so by default only that Mac can see it. To use it from a phone or
 laptop on the same tailnet, put Tailscale in front of it rather than widening the bind:
@@ -458,3 +466,10 @@ and says so.
 same name and the session picks up where it left off.
 
 **Charts do not appear** — `plotly` or `matplotlib` is not installed in that venv. Check `env`.
+
+**Choose… does nothing, or no dialog appears** — the dialog is drawn by the machine running
+*server.py*, so it appears there, not on the device showing the page. Locally that is always the same
+screen. If nothing happens at all, macOS is refusing the interaction: launch the app (or the server)
+from your own logged-in session rather than over SSH, and check
+**System Settings → Privacy & Security → Files and Folders** for a prompt. The toast reports whatever
+`osascript` said, which is usually enough to tell these apart.

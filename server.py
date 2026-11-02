@@ -40,6 +40,26 @@ MAX_FIGURES = 6
 MAX_IMAGE_BYTES = 6_000_000
 ORIGIN_PREVIEW = 300      # what rides in the frames payload
 SESSIONS = os.path.join(ROOT, "sessions")
+LASTDIR = os.path.join(SESSIONS, "lastdir.json")
+
+
+def last_dir():
+    """Where the native picker last left off, if it still exists."""
+    try:
+        with open(LASTDIR) as fh:
+            d = json.load(fh).get("dir") or ""
+    except (OSError, ValueError):
+        return ""
+    return d if os.path.isdir(d) else ""
+
+
+def remember_dir(d):
+    try:
+        os.makedirs(SESSIONS, exist_ok=True)
+        with open(LASTDIR, "w") as fh:
+            json.dump({"dir": d}, fh)
+    except OSError:
+        pass
 PENDING = {}              # frames named by a session file but not yet read into memory
 CURRENT = {"transcript": [], "history": [], "file": None}
 
@@ -426,15 +446,59 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return self._send(400, {"error": f"bad json: {e}"})
 
         if p == "/api/files":
+            # the sample data folder is only the fallback: once you have picked a
+            # real file, offer its neighbours instead
+            where = last_dir() or DATA
             out = []
-            if not os.path.isdir(DATA):
-                return self._send(200, {"files": []})
-            for f in sorted(os.listdir(DATA)):
-                fp = os.path.join(DATA, f)
-                if os.path.isfile(fp) and f.lower().endswith((".csv", ".parquet", ".tsv")):
-                    out.append({"name": f, "path": fp,
-                                "bytes": os.path.getsize(fp)})
-            return self._send(200, {"files": out})
+            try:
+                names = sorted(os.listdir(where))[:400]
+            except OSError:
+                names = []
+            for f in names:
+                fp = os.path.join(where, f)
+                if f.startswith(".") or not os.path.isfile(fp):
+                    continue
+                if not f.lower().endswith((".csv", ".parquet", ".tsv", ".txt")):
+                    continue
+                out.append({"name": f, "path": fp, "dir": where,
+                            "bytes": os.path.getsize(fp)})
+            return self._send(200, {"files": out, "dir": where})
+
+        if p == "/api/pick":
+            # The server runs on the user's own machine, so it can ask macOS for a
+            # real file dialog. Only a path crosses the wire — never the file.
+            import shutil, subprocess, sys as _sys
+            if _sys.platform != "darwin" or not shutil.which("osascript"):
+                return self._send(501, {"error": "no native file dialog on this "
+                                                 "platform — type a path instead"})
+            if payload.get("probe"):
+                return self._send(200, {"platform": _sys.platform,
+                                        "osascript": shutil.which("osascript"),
+                                        "last_dir": last_dir() or DATA})
+            # try/on error number -128 catches the Cancel button and returns ""
+            script = ("try\n"
+                      "  set f to choose file with prompt \"Choose a data file to import\"\n"
+                      "  return POSIX path of f\n"
+                      "on error number -128\n"
+                      "  return \"\"\n"
+                      "end try")
+            try:
+                r = subprocess.run(["osascript", "-e", script],
+                                   capture_output=True, text=True, timeout=1800)
+            except subprocess.TimeoutExpired:
+                return self._send(504, {"error": "the file dialog was left open too long"})
+            except OSError as exc:
+                return self._send(500, {"error": f"could not open the dialog: {exc}"})
+            path = (r.stdout or "").strip()
+            if not path:
+                detail = (r.stderr or "").strip().splitlines()
+                return self._send(200, {"cancelled": True,
+                                        "detail": (detail[0] if detail else "")[:200]})
+            if not os.path.isfile(path):
+                return self._send(400, {"error": f"that is not a file: {path}"})
+            remember_dir(os.path.dirname(path))
+            return self._send(200, {"path": path, "name": os.path.basename(path),
+                                    "bytes": os.path.getsize(path)})
 
         if p == "/api/notebook":
             return self._send(200, build_notebook(payload.get("cells") or []))
