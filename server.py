@@ -897,4 +897,11 @@ if __name__ == "__main__":
     socketserver.ThreadingTCPServer.allow_reuse_address = True
     httpd = socketserver.ThreadingTCPServer((host, port), Handler)
     print(f"csvworkbench on http://{host}:{port}", flush=True)
-    httpd.serve_forever()
+    print("Ctrl+C to stop.", flush=True)
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        # Ctrl+C is the normal way to stop this, so it should not look like a crash
+        print("\nstopped.", flush=True)
+    finally:
+        httpd.server_close()
