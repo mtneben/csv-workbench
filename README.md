@@ -21,8 +21,8 @@ data: a 40,000 × 100 `orders.csv`, a 2,000-row `products.csv` to join against, 
 
 ```bash
 python3.12 -m venv ~/venvs/workbench
-~/venvs/workbench/bin/pip install --upgrade pip
-~/venvs/workbench/bin/pip install pandas pyarrow plotly matplotlib duckdb
+~/venvs/workbench/bin/python -m pip install --upgrade pip
+~/venvs/workbench/bin/python -m pip install pandas pyarrow plotly matplotlib duckdb
 
 cd workbench
 ~/venvs/workbench/bin/python server.py 8840 127.0.0.1

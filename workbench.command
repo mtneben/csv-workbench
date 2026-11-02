@@ -13,8 +13,8 @@ if [ ! -x "$PY" ]; then
   echo
   echo "Create the venv first:"
   echo "  python3.12 -m venv ~/venvs/workbench"
-  echo "  ~/venvs/workbench/bin/pip install --upgrade pip"
-  echo "  ~/venvs/workbench/bin/pip install pandas pyarrow plotly matplotlib duckdb"
+  echo "  ~/venvs/workbench/bin/python -m pip install --upgrade pip"
+  echo "  ~/venvs/workbench/bin/python -m pip install pandas pyarrow plotly matplotlib duckdb"
   echo
   echo "Then run this again. (If your venv lives elsewhere:"
   echo "  export WORKBENCH_PYTHON=/path/to/venv/bin/python  )"

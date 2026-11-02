@@ -42,8 +42,8 @@ results stack newest-first.
 ```bash
 # 1. a venv with the libraries
 python3.12 -m venv ~/venvs/workbench
-~/venvs/workbench/bin/pip install --upgrade pip
-~/venvs/workbench/bin/pip install pandas pyarrow plotly matplotlib duckdb
+~/venvs/workbench/bin/python -m pip install --upgrade pip
+~/venvs/workbench/bin/python -m pip install pandas pyarrow plotly matplotlib duckdb
 
 # 2. run it
 cd ~/tools/workbench
@@ -401,7 +401,7 @@ bin/python -m pip install pandas pyarrow plotly matplotlib duckdb
 Then point the launcher at it: `export WORKBENCH_PYTHON=$PWD/bin/python`.
 
 **Another `ModuleNotFoundError`** — a single library is missing from a venv that otherwise works.
-`~/venvs/workbench/bin/pip list` shows what is there; re-run the install line from §2.
+`~/venvs/workbench/bin/python -m pip list` shows what is there; re-run the install line from §2.
 
 **The copy button does nothing** — you are not on `localhost`. The clipboard API needs a secure
 context, which `127.0.0.1` is and a LAN IP is not. The app falls back to selecting the text for you
