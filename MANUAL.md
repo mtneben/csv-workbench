@@ -382,7 +382,7 @@ Two ways to check:
 bin/python -c "import sys; print(sys.executable, sys.prefix)"
 
 # where did the packages go?
-~/venvs/workbench/bin/pip list | head
+~/venvs/workbench/bin/python -m pip list | head
 ```
 
 If `sys.prefix` is the project folder, that is a second venv and it has none of the libraries.
