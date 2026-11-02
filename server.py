@@ -7,8 +7,27 @@ import threading, time
 import http.server
 import urllib.parse
 
-import numpy as np
-import pandas as pd
+try:
+    import numpy as np
+    import pandas as pd
+except ModuleNotFoundError as _exc:
+    import sys as _sys
+    _sys.exit(f"""
+This interpreter cannot find '{_exc.name}':
+
+  {_sys.executable}
+
+Almost always that means the packages were installed into a *different* python.
+Install them into the one you are running:
+
+  {_sys.executable} -m pip install pandas pyarrow plotly matplotlib duckdb
+
+or run the interpreter that already has them, for example:
+
+  ~/venvs/workbench/bin/python server.py 8840 127.0.0.1
+
+Note that 'bin/python' is relative: it means ./bin/python in the current folder.
+""")
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(ROOT, "data")

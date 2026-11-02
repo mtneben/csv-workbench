@@ -2,6 +2,11 @@
 __pycache__/
 *.py[cod]
 
+# venvs, wherever they are created
+.venv/
+venv/
+pyvenv.cfg
+
 # data: regenerate the samples with gen_data.py
 data/*.csv
 data/*.parquet
