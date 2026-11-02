@@ -1,85 +1,140 @@
-"""Generate the small synthetic CSVs the prototype runs against."""
-import numpy as np, pandas as pd, os, time
+"""Generate the sample CSVs the app is demonstrated with.
+
+Deliberately domain-neutral retail data: a wide orders table, a small product
+catalogue to join against, and a small per-store daily summary. Regenerate with:
+
+    python gen_data.py
+"""
+import os
+
+import numpy as np
+import pandas as pd
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 os.makedirs(OUT, exist_ok=True)
 rng = np.random.default_rng(7)
 
-# ---------- cell_register: the thing you join to ----------
-NCELL = 2000
-cell_ids = rng.choice(np.arange(4_000_000, 5_000_000), NCELL, replace=False)
-cells = pd.DataFrame({
-    "cell_id":        cell_ids,
-    "site_id":        [f"UK{40000 + i // 3}" for i in range(NCELL)],
-    "sector":         np.tile([1, 2, 3], NCELL // 3 + 1)[:NCELL],
-    "azimuth_deg":    np.tile([0.0, 120.0, 240.0], NCELL // 3 + 1)[:NCELL],
-    "antenna_height_m": np.round(rng.normal(20, 5, NCELL), 1),
-    "clutter_class":  rng.choice(["Urban", "Suburban", "Rural"], NCELL, p=[.55, .3, .15]),
-    "band":           rng.choice(["L08", "L21", "n78"], NCELL, p=[.3, .45, .25]),
-})
-cells.to_csv(os.path.join(OUT, "cell_register.csv"), index=False)
-print("cell_register.csv", len(cells), "rows")
+N_PRODUCTS = 2_000
+N_ORDERS = 40_000
 
-# ---------- drive_test: the wide one ----------
-N = 40_000
-pick = rng.integers(0, NCELL, N)
-bands = ["L08", "L21", "n78"]
-d = {
-    "timestamp": pd.date_range("2026-10-29 08:00:00", periods=N, freq="s").astype(str),
-    "sample_id": np.arange(4_812_001, 4_812_001 + N),
-    "cell_id": cell_ids[pick],
-    "pci": rng.integers(0, 504, N),
-    "band": rng.choice(bands, N, p=[.3, .45, .25]),
-    "rat": rng.choice(["LTE", "NR"], N, p=[.7, .3]),
-    "rsrp_dbm": np.round(rng.normal(-95, 12, N), 1),
-    "rsrq_db": np.round(rng.normal(-11, 3, N), 1),
-    "sinr_db": np.round(rng.normal(9, 6, N), 1),
-    "dl_thr_kbps": np.round(rng.lognormal(10.2, 0.6, N), 0),
-    "ul_thr_kbps": np.round(rng.lognormal(8.9, 0.6, N), 0),
-    "ta": rng.integers(0, 40, N),
-    "cqi": rng.integers(1, 16, N),
-    "mcs_dl": rng.integers(0, 28, N),
-    "bler_pct": np.round(rng.gamma(1.2, 1.4, N), 2),
-    "lat": np.round(53.53 + rng.normal(0, .05, N), 5),
-    "lon": np.round(-1.47 + rng.normal(0, .06, N), 5),
-    "easting": rng.integers(430_000, 440_000, N),
-    "northing": rng.integers(400_000, 410_000, N),
-    "speed_kmh": np.round(np.abs(rng.normal(30, 22, N)), 1),
-    "district": rng.choice(["Barnsley", "Doncaster", "Rotherham", "Sheffield", "Wakefield"], N),
-    "postcode_district": rng.choice(["S70", "S71", "DN1", "S60", "WF1"], N),
-    "ue_model": rng.choice(["SM-S911B", "SM-G991B", "iPhone15,2", "Pixel8"], N),
-    "notes": ["" for _ in range(N)],
+# ---------------------------------------------------------------- products
+product_ids = np.arange(1_000_001, 1_000_001 + N_PRODUCTS)
+categories = {
+    "Home":        ["Kitchen", "Lighting", "Storage", "Textiles"],
+    "Garden":      ["Tools", "Outdoor", "Plants", "Furniture"],
+    "Electronics": ["Audio", "Computing", "Accessories", "Smart Home"],
+    "Clothing":    ["Outerwear", "Footwear", "Tops", "Accessories"],
+    "Sports":      ["Cycling", "Training", "Outdoor", "Water"],
 }
-# pad out to 100 columns the way a real MRDB export pads out
-fillers = {}
-for i in range(100 - len(d)):
-    kind = i % 3
-    name = (f"nb{i//3+1}_rsrp" if kind == 0 else
-            f"meas_{i:03d}" if kind == 1 else f"cat_{i:03d}")
-    if kind == 0:
-        col = np.round(rng.normal(-105, 15, N), 1)
-        col[rng.random(N) < .35] = np.nan
-    elif kind == 1:
-        col = np.round(rng.normal(50, 15, N), 3)
-    else:
-        col = rng.choice(["north", "south", "east", "west"], N)
-    fillers[name] = col
-d.update(fillers)
+cat_names = list(categories)
+main_cat = rng.choice(cat_names, N_PRODUCTS, p=[.28, .18, .24, .18, .12])
 
-drive = pd.DataFrame(d)
-drive.to_csv(os.path.join(OUT, "drive_test.csv"), index=False)
-print("drive_test.csv", len(drive), "x", drive.shape[1])
-
-# ---------- cell_register_daily: a small unrelated one ----------
-mrd = pd.DataFrame({
-    "date": np.tile(pd.date_range("2026-10-01", periods=30, freq="D").astype(str), 20),
-    "cell_id": rng.choice(cell_ids, 600),
-    "dl_traffic_gb": np.round(rng.lognormal(1.5, .8, 600), 2),
-    "ul_traffic_gb": np.round(rng.lognormal(0.6, .8, 600), 2),
-    "active_users": rng.integers(1, 400, 600),
+products = pd.DataFrame({
+    "product_id": product_ids,
+    "sku": [f"SKU-{i:06d}" for i in rng.integers(100000, 999999, N_PRODUCTS)],
+    "product_name": [f"{a} {b}" for a, b in zip(
+        rng.choice(["Classic", "Compact", "Pro", "Everyday", "Studio"], N_PRODUCTS),
+        rng.choice(["Chair", "Lamp", "Bottle", "Jacket", "Speaker", "Mat",
+                    "Kettle", "Shelf", "Shoe", "Glove"], N_PRODUCTS))],
+    "category": main_cat,
+    "subcategory": [rng.choice(categories[c]) for c in main_cat],
+    "brand": rng.choice(["Northwind", "Halden", "Kirkwood", "Vantage", "Aurea"],
+                        N_PRODUCTS, p=[.3, .22, .2, .16, .12]),
+    "unit_cost_gbp": np.round(rng.lognormal(2.6, 0.7, N_PRODUCTS), 2),
+    "stock_units": rng.integers(0, 900, N_PRODUCTS),
+    "discontinued": rng.random(N_PRODUCTS) < 0.07,
 })
-mrd.to_csv(os.path.join(OUT, "mrdb_daily.csv"), index=False)
-print("mrdb_daily.csv", len(mrd), "x", mrd.shape[1])
+products.to_csv(os.path.join(OUT, "products.csv"), index=False)
+print(f"products.csv         {len(products):>6} rows x {products.shape[1]} cols")
+
+# ------------------------------------------------------------------ orders
+pick = rng.integers(0, N_PRODUCTS, N_ORDERS)
+quantity = rng.integers(1, 7, N_ORDERS)
+unit_price = np.round(products["unit_cost_gbp"].to_numpy()[pick]
+                      * rng.uniform(1.5, 2.6, N_ORDERS), 2)
+discount = np.round(rng.choice([0, .05, .1, .15, .2, .25], N_ORDERS,
+                               p=[.45, .15, .15, .1, .1, .05]), 2)
+gross = np.round(quantity * unit_price, 2)
+net = np.round(gross * (1 - discount), 2)
+
+channel = rng.choice(["web", "app", "phone", "store"], N_ORDERS, p=[.4, .3, .12, .18])
+status = rng.choice(["delivered", "shipped", "pending", "cancelled", "refunded"],
+                    N_ORDERS, p=[.72, .12, .09, .05, .02])
+has_promo = rng.random(N_ORDERS)
+
+orders = pd.DataFrame({
+    "order_id": np.arange(2_400_001, 2_400_001 + N_ORDERS),
+    "order_date": (pd.Timestamp("2026-01-01")
+                   + pd.to_timedelta(rng.integers(0, 300 * 86400, N_ORDERS), unit="s")),
+    "customer_id": [f"C-{i:07d}" for i in rng.integers(1, 400_000, N_ORDERS)],
+    "product_id": product_ids[pick],
+    "store_id": rng.integers(101, 160, N_ORDERS),
+    "channel": channel,
+    "payment_method": rng.choice(["card", "apple_pay", "gift_card", "invoice",
+                                  "direct_debit"], N_ORDERS,
+                                 p=[.44, .26, .1, .12, .08]),
+    "quantity": quantity,
+    "unit_price_gbp": unit_price,
+    "discount_pct": discount,
+    "gross_amount_gbp": gross,
+    "net_amount_gbp": net,
+    "vat_gbp": np.round(net * 0.2, 2),
+    "shipping_cost_gbp": np.where(channel == "store", np.nan,
+                                  np.round(rng.uniform(0, 12.5, N_ORDERS), 2)),
+    "order_status": status,
+    "delivery_days": np.where(np.isin(status, ["delivered", "shipped"]),
+                              rng.integers(1, 12, N_ORDERS), np.nan),
+    "returned": rng.random(N_ORDERS) < np.where(status == "refunded", .9, .04),
+    "postcode_district": rng.choice(["S70", "S71", "S72", "DN1", "DN2", "WF1", "LS1", "S60"],
+                                    N_ORDERS),
+    "region": rng.choice(["Yorkshire", "North West", "Midlands", "South East", "Scotland"],
+                         N_ORDERS, p=[.34, .2, .22, .18, .06]),
+    "country": "United Kingdom",
+    "loyalty_tier": rng.choice(["none", "bronze", "silver", "gold"], N_ORDERS,
+                               p=[.52, .24, .16, .08]),
+    "campaign_id": np.where(has_promo < .4,
+                            "CMP-" + pd.Series(rng.integers(100, 140, N_ORDERS)).astype(str),
+                            None),
+    "promo_code": np.where(has_promo > .65,
+                           "PROMO" + pd.Series(rng.integers(10, 60, N_ORDERS)).astype(str),
+                           None),
+    "basket_items": rng.integers(1, 24, N_ORDERS),
+    "weight_kg": np.round(rng.gamma(2.0, 1.6, N_ORDERS), 2),
+    "notes": np.where(rng.random(N_ORDERS) < .01, "customer called", None),
+})
+
+# pad out to 100 columns, the way a wide export ends up wide: measures, flags
+# and category codes, with nulls in the measures
+need = 100 - orders.shape[1]
+fillers, i = {}, 0
+while len(fillers) < need:
+    i += 1
+    kind = i % 3
+    if kind == 1:
+        col = np.round(rng.normal(50, 15, N_ORDERS), 3)
+        col[rng.random(N_ORDERS) < .1] = np.nan
+        fillers[f"line_item_{i:03d}"] = col
+    elif kind == 2:
+        fillers[f"promo_flag_{i:03d}"] = rng.integers(0, 2, N_ORDERS)
+    else:
+        fillers[f"segment_{i:03d}"] = rng.choice(["a", "b", "c", "d"], N_ORDERS)
+for name, col in list(fillers.items())[:need]:
+    orders[name] = col
+
+orders.to_csv(os.path.join(OUT, "orders.csv"), index=False)
+print(f"orders.csv           {len(orders):>6} rows x {orders.shape[1]} cols")
+
+# ------------------------------------------------------------- store_daily
+daily = pd.DataFrame({
+    "date": np.tile(pd.date_range("2026-01-01", periods=30, freq="D").strftime("%Y-%m-%d"), 20),
+    "store_id": rng.choice(np.arange(101, 160), 600),
+    "orders": rng.integers(20, 900, 600),
+    "revenue_gbp": np.round(rng.lognormal(8.0, 0.6, 600), 2),
+    "returns": rng.integers(0, 40, 600),
+})
+daily.to_csv(os.path.join(OUT, "store_daily.csv"), index=False)
+print(f"store_daily.csv      {len(daily):>6} rows x {daily.shape[1]} cols")
 
 for f in sorted(os.listdir(OUT)):
-    print(" ", f, f"{os.path.getsize(os.path.join(OUT, f))/1e6:.1f} MB")
+    if f.endswith(".csv"):
+        print(f"  {f:20} {os.path.getsize(os.path.join(OUT, f)) / 1e6:6.1f} MB")

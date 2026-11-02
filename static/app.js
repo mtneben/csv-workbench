@@ -102,9 +102,9 @@ async function api(path, body) {
 }
 
 /* What a column click should insert depends on where the caret is.
-   inside a quote:      on='            -> cell_id
-   just after = ( [ ,:  on=             -> 'cell_id'
-   anywhere else:                       -> drive_test['cell_id']           */
+   inside a quote:      on='            -> product_id
+   just after = ( [ ,:  on=             -> 'product_id'
+   anywhere else:                       -> orders['product_id']            */
 function columnTextFor(el, frameName, colName) {
   const v = el.value;
   const a = el.selectionStart ?? v.length;
@@ -400,11 +400,13 @@ function decorate(card) {
 function cardEl(c) {
   const wrap = document.createElement('div');
   if (!c.card && !c.error) {
+    // two different things look alike here: a cell loaded from a session (never run)
+    // and a run that legitimately produced no value, like `import re`
     wrap.className = 'card restored';
     wrap.innerHTML = `
       <div class="chead">
         <span class="expr">${esc(c.code)}</span>
-        <span class="cmeta">restored — not run</span>
+        <span class="cmeta">${c.restored ? 'restored — not run' : 'ran — nothing to show'}</span>
       </div>
       <div class="cfoot">
         <span class="note"></span>
@@ -708,7 +710,7 @@ async function openPicker() {
   scrim.innerHTML = `<div class="picker">
     <h3>open a file</h3>
     <div style="display:flex;gap:8px;padding:0 14px 12px">
-      <input id="pickPath" placeholder="/Users/you/data/drive_test.csv" spellcheck="false"
+      <input id="pickPath" placeholder="/Users/you/data/orders.csv" spellcheck="false"
              style="flex:1;font-family:var(--mono);font-size:11.5px;background:var(--panel2);
                     color:var(--ink);border:1px solid var(--line);border-radius:7px;
                     padding:7px 10px;outline:none">
@@ -1087,7 +1089,9 @@ run.focus();
       FRAMES = r.frames;
       if (r.transcript && r.transcript.length && !CARDS.length) {
         r.transcript.slice().reverse().forEach(code => {
-          if (!CARDS.length || CARDS[CARDS.length - 1].code !== code) CARDS.push({ code });
+          if (!CARDS.length || CARDS[CARDS.length - 1].code !== code) {
+            CARDS.push({ code, restored: true });
+          }
         });
       }
       (r.history || []).forEach(h => HISTORY.push(h));

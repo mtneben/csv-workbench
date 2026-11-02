@@ -249,7 +249,7 @@ def grid_payload(df, limit=100):
     indexed = index_means_something(df)
     if indexed:
         df = df.reset_index()
-    # pivot_table gives ("rsrp_dbm", "L08") columns; drop the level that never varies
+    # pivot_table gives ("net_amount_gbp", "web") columns; drop the level that never varies
     if isinstance(df.columns, pd.MultiIndex):
         first = {c[0] for c in df.columns}
         if len(first) == 1:
@@ -664,7 +664,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     if size > 12_000_000:
                         card = {"kind": "value", "value":
                                 f"figure is {size/1e6:.0f} MB of JSON — sample the frame "
-                                f"first, e.g. drive_test.sample(20000)"}
+                                f"first, e.g. orders.sample(20000)"}
                     else:
                         card = {"kind": "chart", **payload, "bytes": size}
 

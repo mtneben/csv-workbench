@@ -10,6 +10,13 @@ with `usecols`. This does that in one screen, and keeps the dataframe session th
 It is **not** a notebook. There are no cells, no execution order, no hidden kernel state you have to
 scroll back through. One text box, Enter to run, results stack newest-first.
 
+**Full user manual: [MANUAL.md](MANUAL.md)** — the interface, worked retail examples, charts,
+sessions, keyboard, configuration and troubleshooting.
+
+The bundled samples in `data/` (regenerate with `gen_data.py`) are deliberately ordinary retail
+data: a 40,000 × 100 `orders.csv`, a 2,000-row `products.csv` to join against, and a small
+`store_daily.csv`. Nothing about the tool is specific to any industry.
+
 ## Run it
 
 ```bash
