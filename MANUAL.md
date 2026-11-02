@@ -382,7 +382,34 @@ intermediate results you did not plan to keep.
 
 ---
 
-## 14. Troubleshooting
+## 14. Reaching it from another device
+
+The server binds `127.0.0.1`, so by default only that Mac can see it. To use it from a phone or
+laptop on the same tailnet, put Tailscale in front of it rather than widening the bind:
+
+```bash
+# once, in the admin console: DNS → enable HTTPS Certificates
+tailscale serve --bg 8840
+tailscale serve status        # https://<machine>.<tailnet>.ts.net/ |-- / proxy http://127.0.0.1:8840
+```
+
+That keeps the process on localhost and gives you a real certificate, so the URL is
+`https://<machine>.<tailnet>.ts.net/` and the page is a *secure context* — the copy button works
+there. Over a bare `http://100.x.x.x:8840` it does not, and you fall back to select-and-⌘C.
+
+The alternative, `python server.py 8840 <tailscale-ip>`, works with no certificate step but gives you
+an IP-based URL and no clipboard.
+
+**Never use `0.0.0.0`.** On a corporate LAN that offers the tool, and every CSV it can reach, to the
+whole subnet. And never `tailscale funnel` — the workbench has no authentication of its own; it trusts
+whoever reaches the port. `serve` scopes that to your own devices; `funnel` would scope it to the
+internet.
+
+`tailscale serve reset` removes the proxy. The configuration survives reboots.
+
+---
+
+## 15. Troubleshooting
 
 **`Address already in use`** — something is on port 8840. Either it is workbench already
 (`open http://127.0.0.1:8840`), or pick another port:
