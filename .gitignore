@@ -1,0 +1,17 @@
+# python
+__pycache__/
+*.py[cod]
+
+# data: regenerate the samples with gen_data.py
+data/*.csv
+data/*.parquet
+data/*.tsv.gz
+
+# runtime state
+sessions/*.json
+exports/*
+!exports/.gitkeep
+static/*.tar.gz
+
+# mac
+.DS_Store

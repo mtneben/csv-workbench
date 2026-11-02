@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>workbench — prototype</title>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta name="theme-color" content="#1f2021">
+<meta name="apple-mobile-web-app-title" content="workbench">
+<link rel="stylesheet" href="app.css">
+</head><body>
+
+<div class="topbar">
+  <div class="brand">workbench</div>
+  <div class="grow"></div>
+  <select id="themeSel" title="colour theme"></select>
+  <button class="ghost" id="envBtn" title="libraries available in the run box">env</button>
+  <button class="ghost" id="sessBtn" title="open a saved session">open</button>
+  <button class="ghost" id="saveBtn" title="save this session">save</button>
+  <button class="ghost" id="notebookBtn" title="download this session as a .ipynb">notebook</button>
+  <button class="ghost" id="resetBtn" title="clear the session: frames, bindings and imports">restart</button>
+  <button id="addFile">+ Add file</button>
+</div>
+
+<div class="body">
+  <aside class="rail">
+    <div class="railhead">Workspace <span class="n" id="fcount">0 frames</span></div>
+    <div class="frames" id="frames"></div>
+  </aside>
+
+  <div class="railgrip" id="railGrip" title="drag to resize · double-click to collapse"><span>‹</span></div>
+
+  <div class="main" id="main">
+    <div class="cards" id="cards">
+      <div class="empty" id="empty">
+        <div class="emptyin">
+          <h2>No results yet</h2>
+          <p>Add a file, then type pandas in the bar below and press <b>Enter</b>.
+             Assign with <code>name = ...</code> to keep a frame.</p>
+        </div>
+      </div>
+    </div>
+    <div class="runbar">
+      <div class="runrow">
+        <div class="prompt">›</div>
+        <textarea id="run" rows="1" placeholder="type an expression here — Enter to run"></textarea>
+      </div>
+      <div class="hint"><b>Enter</b> runs · <b>Shift+Enter</b> newline · assignment creates a frame</div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body></html>
