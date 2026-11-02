@@ -1,4 +1,4 @@
-"""Generate the workbench icon: a data grid with one column selected.
+"""Generate the csvworkbench icon: a data grid with one column selected.
 
 SVG is the source of truth; the PNGs are rasterised from the same geometry.
 """
@@ -51,7 +51,7 @@ def svg():
             cells.append(f'  <rect x="{x}" y="{y}" width="{CELLW}" height="{CELLW}" '
                          f'rx="{CRADIUS}" fill="{fill}"/>')
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SIZE} {SIZE}" '
-            f'width="{SIZE}" height="{SIZE}" role="img" aria-label="workbench">\n'
+            f'width="{SIZE}" height="{SIZE}" role="img" aria-label="csvworkbench">\n'
             f'  <rect width="{SIZE}" height="{SIZE}" rx="{RADIUS}" fill="#1f2021"/>\n'
             + "\n".join(cells) + "\n</svg>\n")
 

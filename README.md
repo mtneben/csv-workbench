@@ -1,6 +1,6 @@
-# workbench
+# csvworkbench
 
-A local analysis workbench for wide CSV files: drop a file, choose the columns before anything is
+A local analysis csvworkbench for wide CSV files: drop a file, choose the columns before anything is
 loaded, then work in plain pandas with results as cards.
 
 Built for a specific annoyance — 10 GB CSVs where you only want 12 of 100 columns, and the usual
@@ -20,17 +20,17 @@ data: a 40,000 × 100 `orders.csv`, a 2,000-row `products.csv` to join against, 
 ## Run it
 
 ```bash
-python3.12 -m venv ~/venvs/workbench
-~/venvs/workbench/bin/python -m pip install --upgrade pip
-~/venvs/workbench/bin/python -m pip install pandas pyarrow plotly matplotlib duckdb
+python3.12 -m venv ~/venvs/csvworkbench
+~/venvs/csvworkbench/bin/python -m pip install --upgrade pip
+~/venvs/csvworkbench/bin/python -m pip install pandas pyarrow plotly matplotlib duckdb
 
-cd workbench
-~/venvs/workbench/bin/python server.py 8840 127.0.0.1
+cd csvworkbench
+~/venvs/csvworkbench/bin/python server.py 8840 127.0.0.1
 ```
 
-Then open <http://127.0.0.1:8840>. On macOS, `workbench.command` does all of that and opens Safari;
+Then open <http://127.0.0.1:8840>. On macOS, `csvworkbench.command` does all of that and opens Safari;
 **File → Add to Dock** turns the page into a Dock app, and `./make_app.sh` builds a proper
-`Workbench.app` with an icon if you want one in the Dock.
+`csvcsvworkbench.app` with an icon if you want one in the Dock.
 
 Bind `127.0.0.1`, not `0.0.0.0` — it keeps the tool off the office network, and localhost counts as a
 secure context, which is what makes the clipboard button work.
@@ -67,7 +67,7 @@ static/             app.html/css/js — no build step, no framework
 data/               staged CSVs (git-ignored; gen_data.py regenerates samples)
 sessions/           saved sessions, autosave.json
 exports/            written exports
-workbench.command   macOS launcher
+csvworkbench.command   macOS launcher
 gen_icon.py         draws the icon; SVG is the source of truth
 ```
 

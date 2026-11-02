@@ -1,4 +1,4 @@
-# workbench — user manual
+# csvworkbench — user manual
 
 A local workbench for wide CSV files. Pick your columns before anything is loaded, then work in
 plain pandas with results as cards.
@@ -22,13 +22,13 @@ df = pd.read_csv("huge.csv", usecols=[...])   # do it again
 
 Two full parses and a manual copying exercise, before you have asked a single question of the data.
 
-workbench does that step in one screen: it reads the header and 2,000 sample rows in milliseconds,
+csvworkbench does that step in one screen: it reads the header and 2,000 sample rows in milliseconds,
 shows you every column with its type, null rate, distinct count and most common value, and lets you
 tick what you actually want. Only the ticked columns are read.
 
 The second thing it solves is the ritual around it — activating a venv, remembering which folder
 has the venv with scipy in it, launching a notebook, importing, forgetting which variable held what.
-workbench is one window that is already open, and the dataframes are listed down the left side with
+csvworkbench is one window that is already open, and the dataframes are listed down the left side with
 their source, shape and memory.
 
 What it deliberately is **not**: a notebook. There are no cells, no execution order, no hidden
@@ -41,13 +41,13 @@ results stack newest-first.
 
 ```bash
 # 1. a venv with the libraries
-python3.12 -m venv ~/venvs/workbench
-~/venvs/workbench/bin/python -m pip install --upgrade pip
-~/venvs/workbench/bin/python -m pip install pandas pyarrow plotly matplotlib duckdb
+python3.12 -m venv ~/venvs/csvworkbench
+~/venvs/csvworkbench/bin/python -m pip install --upgrade pip
+~/venvs/csvworkbench/bin/python -m pip install pandas pyarrow plotly matplotlib duckdb
 
 # 2. run it
-cd ~/tools/workbench
-~/venvs/workbench/bin/python server.py 8840 127.0.0.1
+cd ~/tools/csvworkbench
+~/venvs/csvworkbench/bin/python server.py 8840 127.0.0.1
 
 # 3. open http://127.0.0.1:8840
 ```
@@ -63,9 +63,9 @@ Open dialog (you pick any file anywhere; only its *path* is sent to the server, 
 or uploaded), a path box you can type into, and a list of the files in the folder you last picked
 from — which is the sample folder until you pick something else.
 
-**Launcher.** `workbench.command` does all of the above and opens Safari. Double-click it in
+**Launcher.** `csvworkbench.command` does all of the above and opens Safari. Double-click it in
 Finder; if macOS refuses the first time, right-click → Open. It assumes
-`~/venvs/workbench/bin/python`; override with `WORKBENCH_PYTHON=/path/to/python`.
+`~/venvs/csvworkbench/bin/python`; override with `WORKBENCH_PYTHON=/path/to/python`.
 
 **As a Dock app.** With the page open in Safari: **File → Add to Dock**. Own icon, no address bar,
 ⌘-tab. No signing, no bundle.
@@ -73,8 +73,8 @@ Finder; if macOS refuses the first time, right-click → Open. It assumes
 **As a real application.** If you'd rather not keep a Terminal window around:
 
 ```bash
-cd ~/venvs/workbench
-./make_app.sh                    # builds ~/Applications/Workbench.app
+cd ~/venvs/csvworkbench
+./make_app.sh                    # builds ~/Applications/csvcsvworkbench.app
 ./make_app.sh /Applications      # or put it with the other apps
 ```
 
@@ -83,11 +83,11 @@ there is no Automator step and nothing to sign. It bakes in the absolute path of
 of your interpreter, so re-run it if either moves. Drag the app to the Dock; launching it starts the
 server and opens the browser, and quitting it stops the server.
 
-A window-less app fails silently by design, so it logs to `~/Library/Logs/workbench.log` and shows a
+A window-less app fails silently by design, so it logs to `~/Library/Logs/csvworkbench.log` and shows a
 dialog if the server does not come up. Read that log first when something is wrong.
 `data/` and `sessions/` stay where they are — the app is only a launcher.
 
-**At login.** System Settings → General → Login Items → add `workbench.command`.
+**At login.** System Settings → General → Login Items → add `csvworkbench.command`.
 
 ### On a managed or locked-down Mac
 
@@ -95,13 +95,13 @@ On a machine you do not administer, prefer the option that installs nothing. Kee
 venv in your home folder, do not use `make_app.sh`, and launch with a **Shortcut** — it is Apple's own,
 already trusted, and looks like nothing at all:
 
-1. Shortcuts → **+** → name it `workbench`.
+1. Shortcuts → **+** → name it `csvworkbench`.
 2. Add **Run Shell Script**, shell `/bin/bash`, and paste this with your real paths:
 
 ```bash
-APP="$HOME/tools/workbench"; PY="$APP/bin/python"; URL="http://127.0.0.1:8840/"
+APP="$HOME/tools/csvworkbench"; PY="$APP/bin/python"; URL="http://127.0.0.1:8840/"
 curl -s -o /dev/null --max-time 1 "$URL" && { open "$URL"; exit 0; }
-cd "$APP" && nohup "$PY" server.py 8840 127.0.0.1 >> "$HOME/Library/Logs/workbench.log" 2>&1 &
+cd "$APP" && nohup "$PY" server.py 8840 127.0.0.1 >> "$HOME/Library/Logs/csvworkbench.log" 2>&1 &
 sleep 2; open "$URL"
 ```
 
@@ -112,7 +112,7 @@ Nothing goes into `/Applications`, no login item, no LaunchAgent, no admin right
 If you would rather not have any clickable thing at all, the two-line version is fine too:
 
 ```bash
-cd ~/tools/workbench && bin/python server.py 8840 127.0.0.1
+cd ~/tools/csvworkbench && bin/python server.py 8840 127.0.0.1
 ```
 
 **Do not** bother with Automator. Its "Application" output is the same shell-script-in-a-bundle that
@@ -125,7 +125,7 @@ is deprecated in favour of Shortcuts anyway.
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│ workbench        [theme] [env]        [open] [save] [notebook] [new] [+ Add file] │
+│ csvworkbench        [theme] [env]        [open] [save] [notebook] [new] [+ Add file] │
 ├───────────────┬──────────────────────────────────────────────────────┤
 │ WORKSPACE     │  ╷                                                    │
 │  orders       │  │  cards: one per result, newest first               │
@@ -231,7 +231,7 @@ by_region = orders.pivot_table(
     aggfunc='sum', fill_value=0)
 ```
 
-The pivot key becomes the index. workbench shows it as a real column in the card and marks it
+The pivot key becomes the index. csvworkbench shows it as a real column in the card and marks it
 `INDEX` in the tree, so the labels never vanish.
 
 ### Filtering and grouping
@@ -439,7 +439,7 @@ The alternative, `python server.py 8840 <tailscale-ip>`, works with no certifica
 an IP-based URL and no clipboard.
 
 **Never use `0.0.0.0`.** On a corporate LAN that offers the tool, and every CSV it can reach, to the
-whole subnet. And never `tailscale funnel` — the workbench has no authentication of its own; it trusts
+whole subnet. And never `tailscale funnel` — the csvworkbench has no authentication of its own; it trusts
 whoever reaches the port. `serve` scopes that to your own devices; `funnel` would scope it to the
 internet.
 
@@ -449,9 +449,9 @@ internet.
 
 ## 15. Troubleshooting
 
-**`Address already in use`** — something is on port 8840. Either it is workbench already
+**`Address already in use`** — something is on port 8840. Either it is csvworkbench already
 (`open http://127.0.0.1:8840`), or pick another port:
-`~/venvs/workbench/bin/python server.py 8841 127.0.0.1`.
+`~/venvs/csvworkbench/bin/python server.py 8841 127.0.0.1`.
 
 **`ModuleNotFoundError: No module named 'numpy'`** — you are almost certainly running a different
 python from the one you installed into. `bin/python` is a *relative* path: it means `./bin/python`
@@ -464,14 +464,14 @@ Two ways to check:
 bin/python -c "import sys; print(sys.executable, sys.prefix)"
 
 # where did the packages go?
-~/venvs/workbench/bin/python -m pip list | head
+~/venvs/csvworkbench/bin/python -m pip list | head
 ```
 
 If `sys.prefix` is the project folder, that is a second venv and it has none of the libraries.
 Either run the one that does:
 
 ```bash
-~/venvs/workbench/bin/python server.py 8840 127.0.0.1
+~/venvs/csvworkbench/bin/python server.py 8840 127.0.0.1
 ```
 
 or install into the project one and stick to it:
@@ -483,14 +483,14 @@ bin/python -m pip install pandas pyarrow plotly matplotlib duckdb
 Then point the launcher at it: `export WORKBENCH_PYTHON=$PWD/bin/python`.
 
 **Another `ModuleNotFoundError`** — a single library is missing from a venv that otherwise works.
-`~/venvs/workbench/bin/python -m pip list` shows what is there; re-run the install line from §2.
+`~/venvs/csvworkbench/bin/python -m pip list` shows what is there; re-run the install line from §2.
 
 **The copy button does nothing** — you are not on `localhost`. The clipboard API needs a secure
 context, which `127.0.0.1` is and a LAN IP is not. The app falls back to selecting the text for you
 and says so.
 
 **`.command` will not open** — macOS quarantined it after download:
-`xattr -dr com.apple.quarantine ~/tools/workbench`.
+`xattr -dr com.apple.quarantine ~/tools/csvworkbench`.
 
 **A frame says `missing — orders.csv`** — the file moved or was renamed. Import it again under the
 same name and the session picks up where it left off.

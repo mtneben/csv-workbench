@@ -1,4 +1,4 @@
-"""Throwaway prototype: pandas workbench. Pure stdlib server + pandas.
+"""csvworkbench — a local workbench for wide CSV files. Stdlib server + pandas.
 
 One execution path: /api/run evals/execs the text from the run box.
 """
@@ -24,7 +24,7 @@ Install them into the one you are running:
 
 or run the interpreter that already has them, for example:
 
-  ~/venvs/workbench/bin/python server.py 8840 127.0.0.1
+  ~/venvs/csvworkbench/bin/python server.py 8840 127.0.0.1
 
 Note that 'bin/python' is relative: it means ./bin/python in the current folder.
 """)
@@ -896,5 +896,5 @@ if __name__ == "__main__":
 
     socketserver.ThreadingTCPServer.allow_reuse_address = True
     httpd = socketserver.ThreadingTCPServer((host, port), Handler)
-    print(f"workbench prototype on http://{host}:{port}", flush=True)
+    print(f"csvworkbench on http://{host}:{port}", flush=True)
     httpd.serve_forever()
