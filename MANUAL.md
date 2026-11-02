@@ -65,6 +65,23 @@ Finder; if macOS refuses the first time, right-click → Open. It assumes
 **As a Dock app.** With the page open in Safari: **File → Add to Dock**. Own icon, no address bar,
 ⌘-tab. No signing, no bundle.
 
+**As a real application.** If you'd rather not keep a Terminal window around:
+
+```bash
+cd ~/venvs/workbench
+./make_app.sh                    # builds ~/Applications/Workbench.app
+./make_app.sh /Applications      # or put it with the other apps
+```
+
+It assembles the bundle itself — `Info.plist`, the launcher, and the icon from `gen_icon.py` — so
+there is no Automator step and nothing to sign. It bakes in the absolute path of this checkout and
+of your interpreter, so re-run it if either moves. Drag the app to the Dock; launching it starts the
+server and opens the browser, and quitting it stops the server.
+
+A window-less app fails silently by design, so it logs to `~/Library/Logs/workbench.log` and shows a
+dialog if the server does not come up. Read that log first when something is wrong.
+`data/` and `sessions/` stay where they are — the app is only a launcher.
+
 **At login.** System Settings → General → Login Items → add `workbench.command`.
 
 ---

@@ -56,6 +56,23 @@ def svg():
             + "\n".join(cells) + "\n</svg>\n")
 
 
+def icns():
+    """A macOS .icns, built by hand: the container is a magic header followed by
+    typed chunks that may hold PNG data directly. No iconutil needed."""
+    import struct
+    chunks = []
+    for typ, px in (("ic11", 32), ("ic12", 64), ("ic07", 128),
+                    ("ic13", 256), ("ic08", 256), ("ic14", 512),
+                    ("ic09", 512), ("ic10", 1024)):
+        import io
+        buf = io.BytesIO()
+        draw(px).save(buf, format="PNG")
+        data = buf.getvalue()
+        chunks.append(typ.encode("ascii") + struct.pack(">I", len(data) + 8) + data)
+    body = b"".join(chunks)
+    return b"icns" + struct.pack(">I", len(body) + 8) + body
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     with open(os.path.join(OUT, "icon.svg"), "w", encoding="utf-8") as fh:
@@ -65,6 +82,9 @@ if __name__ == "__main__":
     # a real .ico so the steady stream of /favicon.ico 404s stops
     draw(64).save(os.path.join(OUT, "favicon.ico"),
                   sizes=[(16, 16), (32, 32), (48, 48), (64, 64)])
+    # and a .icns for the .app bundle
+    with open(os.path.join(OUT, "AppIcon.icns"), "wb") as fh:
+        fh.write(icns())
     for f in sorted(os.listdir(OUT)):
         if f.startswith(("icon", "favicon")):
             print(f"  {f:16} {os.path.getsize(os.path.join(OUT, f)):>7} bytes")

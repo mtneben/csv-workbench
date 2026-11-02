@@ -28,8 +28,9 @@ cd workbench
 ~/venvs/workbench/bin/python server.py 8840 127.0.0.1
 ```
 
-Then open <http://127.0.0.1:8840>. On macOS, `workbench.command` does all of that and opens Safari,
-and **File → Add to Dock** turns the page into a Dock app.
+Then open <http://127.0.0.1:8840>. On macOS, `workbench.command` does all of that and opens Safari;
+**File → Add to Dock** turns the page into a Dock app, and `./make_app.sh` builds a proper
+`Workbench.app` with an icon if you want one in the Dock.
 
 Bind `127.0.0.1`, not `0.0.0.0` — it keeps the tool off the office network, and localhost counts as a
 secure context, which is what makes the clipboard button work.
